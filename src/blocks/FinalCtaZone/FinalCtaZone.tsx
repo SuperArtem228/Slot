@@ -3,14 +3,21 @@ import type { FinalCtaZoneProps } from './FinalCtaZone.types';
 import { zLayers } from '../../theme/zLayers';
 import { visualTokens } from '../../theme/visualTokens';
 
+/**
+ * FinalCtaZone: mounts during reward phase. Button starts invisible,
+ * animated in by final_cta_emphasis_v1.
+ */
 export const FinalCtaZone: React.FC<FinalCtaZoneProps> = ({
   sceneState,
   label,
   onTap,
 }) => {
-  const isVisible = sceneState === 'reward_hold';
+  const shouldMount =
+    sceneState === 'reward_reveal' ||
+    sceneState === 'reward_hold' ||
+    sceneState === 'closing';
 
-  if (!isVisible) return null;
+  if (!shouldMount) return null;
 
   return (
     <div
@@ -41,6 +48,8 @@ export const FinalCtaZone: React.FC<FinalCtaZoneProps> = ({
           cursor: 'pointer',
           boxShadow: `0 4px 24px ${visualTokens.colors.goldAccent}40`,
           letterSpacing: 0.5,
+          opacity: 0,
+          willChange: 'transform, opacity, box-shadow',
         }}
       >
         {label}
