@@ -103,8 +103,23 @@ export class RescueSceneController {
     // Ready for attempt 1
     this.go('ready_attempt_1');
 
-    // Start CTA idle pulse
+    // Start ambient systems + CTA idle pulse
+    this.startAmbient();
     this.playAnim('cta_idle_pulse_v1');
+  }
+
+  /** Start all ambient motion loops */
+  private startAmbient(): void {
+    this.playAnim('ambient_idle_loop_v1');
+    this.playAnim('floating_props_drift_v1');
+    this.playAnim('chrome_shimmer_v1');
+  }
+
+  /** Stop all ambient motion loops */
+  private stopAmbient(): void {
+    this.stopAnim('ambient_idle_loop_v1');
+    this.stopAnim('floating_props_drift_v1');
+    this.stopAnim('chrome_shimmer_v1');
   }
 
   /** User taps the CTA */
@@ -165,7 +180,7 @@ export class RescueSceneController {
       'power3.out',
     );
     this.playAnim('spin_start_ignite_v1');
-    this.playAnim('background_charge_up_v1', { intensity: 1.05 });
+    this.playAnim('background_charge_up_v1', { attemptLevel: 1 });
 
     await spinPromise;
 
@@ -194,7 +209,7 @@ export class RescueSceneController {
       'expo.out',
     );
     this.playAnim('spin_start_ignite_v2');
-    this.playAnim('background_charge_up_v1', { intensity: 1.1 });
+    this.playAnim('background_charge_up_v1', { attemptLevel: 2 });
 
     await spinPromise;
 
@@ -228,7 +243,7 @@ export class RescueSceneController {
       0.18,
       'expo.out',
     );
-    this.playAnim('background_charge_up_v1', { intensity: 1.15 });
+    this.playAnim('background_charge_up_v1', { attemptLevel: 3 });
     await spinPromise;
 
     // Lock
@@ -242,7 +257,8 @@ export class RescueSceneController {
       this.playAnim('jackpot_burst_support_v1'),
     ]);
 
-    // Morph
+    // Morph — stop ambient before transition
+    this.stopAmbient();
     this.go('reward_morph');
     await this.playAnim('reward_morph_v1');
 

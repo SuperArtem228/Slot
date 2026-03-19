@@ -1,7 +1,10 @@
 import gsap from 'gsap';
 import type { AnimationModule, AnimationContext, AnimationResult } from '../core/animationTypes';
 
-/** Reward morph: slot frame fades back, center energy collects into reward form. */
+/**
+ * Reward morph: slot frame fades back, center energy collects,
+ * background settles to calm premium state, HUD exits.
+ */
 export const reward_morph_v1: AnimationModule = {
   id: 'reward_morph_v1',
   slot: 'rewardMorph',
@@ -12,6 +15,9 @@ export const reward_morph_v1: AnimationModule = {
     const frame = ctx.layers['slot-frame'];
     const morphLayer = ctx.layers['reward-morph'];
     const hud = ctx.layers['hud'];
+    const bg = ctx.layers['background'];
+    const ambientBack = ctx.layers['ambient-back'];
+    const ambientFront = ctx.layers['ambient-front'];
 
     const tl = gsap.timeline();
 
@@ -34,6 +40,30 @@ export const reward_morph_v1: AnimationModule = {
         duration: 0.4,
         ease: 'power2.in',
       }, 0);
+    }
+
+    // Ambient props fade
+    [ambientBack, ambientFront].forEach((layer) => {
+      if (layer) {
+        tl.to(layer, { opacity: 0, duration: 0.5, ease: 'sine.out' }, 0.1);
+      }
+    });
+
+    // Background settles to calm state
+    if (bg) {
+      const halo = bg.querySelector('[data-bg="halo"]') as HTMLElement | null;
+      const centerGlow = bg.querySelector('[data-bg="center-glow"]') as HTMLElement | null;
+      const warmAccent = bg.querySelector('[data-bg="warm-accent"]') as HTMLElement | null;
+
+      if (halo) {
+        tl.to(halo, { opacity: 0.35, scale: 1, duration: 0.7, ease: 'sine.out' }, 0.1);
+      }
+      if (centerGlow) {
+        tl.to(centerGlow, { opacity: 0.5, scale: 1, duration: 0.7, ease: 'sine.out' }, 0.1);
+      }
+      if (warmAccent) {
+        tl.to(warmAccent, { opacity: 0.1, duration: 0.5, ease: 'sine.out' }, 0.1);
+      }
     }
 
     // Morph layer: center glow blooms

@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import type { AnimationModule, AnimationContext, AnimationResult } from '../core/animationTypes';
 
-let activeTween: gsap.core.Timeline | null = null;
+let activeTweens: gsap.core.Tween[] = [];
 
 /** Hold the final reward scene stable with minimal breathing. */
 export const reward_hold_stabilize_v1: AnimationModule = {
@@ -13,37 +13,54 @@ export const reward_hold_stabilize_v1: AnimationModule = {
     const card = ctx.layers['reward-card'];
     const bg = ctx.layers['background'];
 
-    const tl = gsap.timeline({ repeat: -1 });
-    activeTween = tl;
-
-    // Gentle card breathing
+    // Gentle card glow breathing
     if (card) {
-      tl.to(card, {
-        boxShadow: '0 0 50px rgba(0,200,83,0.35)',
-        duration: 2,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-      }, 0);
+      activeTweens.push(
+        gsap.to(card, {
+          boxShadow: '0 0 50px rgba(0,200,83,0.35)',
+          duration: 2.5,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
+        }),
+      );
     }
 
-    // Background gentle pulse
+    // Background halo gentle pulse
     if (bg) {
-      tl.to(bg, {
-        filter: 'brightness(1.03)',
-        duration: 3,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-      }, 0);
+      const halo = bg.querySelector('[data-bg="halo"]') as HTMLElement | null;
+      if (halo) {
+        activeTweens.push(
+          gsap.to(halo, {
+            opacity: 0.4,
+            duration: 3,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+          }),
+        );
+      }
+
+      const centerGlow = bg.querySelector('[data-bg="center-glow"]') as HTMLElement | null;
+      if (centerGlow) {
+        activeTweens.push(
+          gsap.to(centerGlow, {
+            opacity: 0.55,
+            duration: 3.5,
+            ease: 'sine.inOut',
+            yoyo: true,
+            repeat: -1,
+          }),
+        );
+      }
     }
 
     return { status: 'completed' };
   },
 
   stop() {
-    activeTween?.kill();
-    activeTween = null;
+    activeTweens.forEach((t) => t.kill());
+    activeTweens = [];
   },
 
   dispose() {

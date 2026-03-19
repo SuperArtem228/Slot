@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import type { AnimationModule, AnimationContext, AnimationResult } from '../core/animationTypes';
 
-/** Attempt 1 ignition — medium energy */
+/** Attempt 1 ignition — medium energy, subtle halo activation */
 export const spin_start_ignite_v1: AnimationModule = {
   id: 'spin_start_ignite_v1',
   slot: 'spinStart',
@@ -10,6 +10,7 @@ export const spin_start_ignite_v1: AnimationModule = {
 
   async play(ctx: AnimationContext): Promise<AnimationResult> {
     const frame = ctx.layers['slot-frame'];
+    const bg = ctx.layers['background'];
 
     const tl = gsap.timeline();
 
@@ -24,6 +25,14 @@ export const spin_start_ignite_v1: AnimationModule = {
         duration: 0.15,
         ease: 'sine.out',
       });
+    }
+
+    // Halo subtle activation
+    if (bg) {
+      const halo = bg.querySelector('[data-bg="halo"]') as HTMLElement | null;
+      if (halo) {
+        tl.to(halo, { opacity: 0.6, duration: 0.25, ease: 'power2.out' }, 0);
+      }
     }
 
     return new Promise((resolve) => {
