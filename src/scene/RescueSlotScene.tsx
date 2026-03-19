@@ -5,8 +5,9 @@ import { RescueSceneLayers } from './RescueSceneLayers';
 import { RescueSceneController } from './rescueSceneController';
 import { rescueSceneConfig } from './rescueSceneConfig';
 import type { RescueSceneState, AttemptNumber } from './rescueSceneTypes';
+import type { ReelWindowHandle } from '../blocks/ReelWindow/ReelWindow';
 
-function getHudContent(state: RescueSceneState, attemptNum: AttemptNumber) {
+function getHudContent(state: RescueSceneState) {
   const cfg = rescueSceneConfig;
 
   if (state === 'near_miss_1' || state === 'ready_attempt_2') {
@@ -48,13 +49,21 @@ function getStatusCopy(state: RescueSceneState) {
 export const RescueSlotScene: React.FC = () => {
   const [sceneState, setSceneState] = useState<RescueSceneState>('preload');
   const controllerRef = useRef<RescueSceneController | null>(null);
+  const sceneRootRef = useRef<HTMLDivElement>(null);
+  const reelRef = useRef<ReelWindowHandle>(null);
 
   useEffect(() => {
     const ctrl = new RescueSceneController((newState) => {
       setSceneState(newState);
     });
     controllerRef.current = ctrl;
-    ctrl.start();
+
+    // Defer start to next frame so DOM is ready
+    requestAnimationFrame(() => {
+      ctrl.setSceneRoot(sceneRootRef.current);
+      ctrl.setReelHandle(reelRef.current);
+      ctrl.start();
+    });
 
     return () => {
       ctrl.reset();
@@ -70,25 +79,28 @@ export const RescueSlotScene: React.FC = () => {
   const ctaLabel = ctrl?.getCtaLabel() ?? '';
   const ctaEnabled = ctrl?.isCtaEnabled() ?? false;
 
-  const { headline, subheadline } = getHudContent(sceneState, attemptNum);
+  const { headline, subheadline } = getHudContent(sceneState);
   const { title: statusTitle, subtitle: statusSubtitle } = getStatusCopy(sceneState);
 
   return (
     <RescueSceneShell>
-      <RescueSceneLayout>
-        <RescueSceneLayers
-          sceneState={sceneState}
-          currentAttempt={attemptNum}
-          headline={headline}
-          subheadline={subheadline}
-          statusTitle={statusTitle}
-          statusSubtitle={statusSubtitle}
-          ctaLabel={ctaLabel}
-          ctaEnabled={ctaEnabled}
-          reward={rescueSceneConfig.reward}
-          onTap={handleTap}
-        />
-      </RescueSceneLayout>
+      <div ref={sceneRootRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <RescueSceneLayout>
+          <RescueSceneLayers
+            sceneState={sceneState}
+            currentAttempt={attemptNum}
+            headline={headline}
+            subheadline={subheadline}
+            statusTitle={statusTitle}
+            statusSubtitle={statusSubtitle}
+            ctaLabel={ctaLabel}
+            ctaEnabled={ctaEnabled}
+            reward={rescueSceneConfig.reward}
+            onTap={handleTap}
+            reelRef={reelRef}
+          />
+        </RescueSceneLayout>
+      </div>
     </RescueSceneShell>
   );
 };

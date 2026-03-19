@@ -5,6 +5,7 @@ import { AmbientDecorLayer } from '../blocks/AmbientDecorLayer/AmbientDecorLayer
 import { AttemptsHud } from '../blocks/AttemptsHud/AttemptsHud';
 import { SlotFrame } from '../blocks/SlotFrame/SlotFrame';
 import { ReelWindow } from '../blocks/ReelWindow/ReelWindow';
+import type { ReelWindowHandle } from '../blocks/ReelWindow/ReelWindow';
 import { PrimaryActionButton } from '../blocks/PrimaryActionButton/PrimaryActionButton';
 import { StatusCopyLayer } from '../blocks/StatusCopyLayer/StatusCopyLayer';
 import { ImpactFxLayer } from '../blocks/ImpactFxLayer/ImpactFxLayer';
@@ -23,6 +24,7 @@ export type RescueSceneLayersProps = {
   ctaEnabled: boolean;
   reward: RewardConfig;
   onTap: () => void;
+  reelRef: React.RefObject<ReelWindowHandle | null>;
 };
 
 export const RescueSceneLayers: React.FC<RescueSceneLayersProps> = ({
@@ -36,6 +38,7 @@ export const RescueSceneLayers: React.FC<RescueSceneLayersProps> = ({
   ctaEnabled,
   reward,
   onTap,
+  reelRef,
 }) => {
   const showPrimaryCta =
     sceneState !== 'reward_hold' && sceneState !== 'closing';
@@ -53,7 +56,7 @@ export const RescueSceneLayers: React.FC<RescueSceneLayersProps> = ({
       />
 
       <SlotFrame sceneState={sceneState}>
-        <ReelWindow sceneState={sceneState} />
+        <ReelWindow ref={reelRef} sceneState={sceneState} />
       </SlotFrame>
 
       <ImpactFxLayer sceneState={sceneState} />
