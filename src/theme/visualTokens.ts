@@ -1,0 +1,46 @@
+export const visualTokens = {
+  colors: {
+    bgBase: '#0a0e14',
+    bgDeep: '#060a10',
+    emeraldGlow: '#00c853',
+    limeAccent: '#76ff03',
+    goldAccent: '#ffd600',
+    chromeLight: '#e0e0e0',
+    chromeDark: '#424242',
+    glass: 'rgba(255, 255, 255, 0.06)',
+    glassBright: 'rgba(255, 255, 255, 0.12)',
+    textPrimary: '#ffffff',
+    textSecondary: 'rgba(255, 255, 255, 0.7)',
+    textMuted: 'rgba(255, 255, 255, 0.45)',
+    ctaBg: '#00c853',
+    ctaText: '#ffffff',
+    rewardCardBg: 'rgba(10, 14, 20, 0.92)',
+    rewardCardBorder: 'rgba(0, 200, 83, 0.4)',
+  },
+  radii: {
+    sm: 8,
+    md: 12,
+    lg: 20,
+    xl: 28,
+    full: 9999,
+  },
+  spacing: {
+    xs: 4,
+    sm: 8,
+    md: 16,
+    lg: 24,
+    xl: 32,
+    xxl: 48,
+  },
+  fontSizes: {
+    xs: 11,
+    sm: 13,
+    md: 16,
+    lg: 20,
+    xl: 28,
+    xxl: 36,
+    hero: 48,
+  },
+} as const;
+
+export type VisualTokens = typeof visualTokens;
