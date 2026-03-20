@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef 
 import gsap from 'gsap';
 import type { ReelWindowProps } from './ReelWindow.types';
 import { zLayers } from '../../theme/zLayers';
-import { visualTokens } from '../../theme/visualTokens';
 
 // Symbol data — PNG assets with emoji fallbacks
 const SYMBOLS = [
@@ -15,16 +14,17 @@ const SYMBOLS = [
   { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}' },
 ];
 
-const SYMBOL_HEIGHT = 64;
+// Each cell in the 3x3 grid — symbol occupies ~55% of cell
+const SYMBOL_HEIGHT = 56;
 const TOTAL_SYMBOLS = SYMBOLS.length;
 const STRIP_HEIGHT = TOTAL_SYMBOLS * SYMBOL_HEIGHT;
 
 // Near miss outcomes: center row index for each column
 const OUTCOMES: Record<string, number[]> = {
   idle: [0, 3, 5],
-  near_miss_1: [0, 1, 2],       // crown, bonus, chest — close but different
-  near_miss_2: [3, 3, 0],       // 500FS, 500FS, crown — two match, third off
-  win: [3, 3, 3],               // 500FS x3
+  near_miss_1: [0, 1, 2],
+  near_miss_2: [3, 3, 0],
+  win: [3, 3, 3],
 };
 
 function getOutcomeKey(state: string): string {
@@ -34,7 +34,7 @@ function getOutcomeKey(state: string): string {
   return 'idle';
 }
 
-/** Single symbol cell — shows PNG image, falls back to emoji if image is tiny/missing */
+/** Single symbol cell — PNG with emoji fallback */
 const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
   const [useFallback, setUseFallback] = React.useState(false);
 
@@ -48,14 +48,13 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
       }}
     >
       {useFallback ? (
-        <span style={{ fontSize: 32, lineHeight: 1 }}>{sym.emoji}</span>
+        <span style={{ fontSize: 28, lineHeight: 1 }}>{sym.emoji}</span>
       ) : (
         <img
           src={sym.asset}
           alt={sym.id}
           draggable={false}
           onLoad={(e) => {
-            // If the loaded image is tiny (placeholder), use emoji fallback
             const img = e.currentTarget;
             if (img.naturalWidth <= 2 && img.naturalHeight <= 2) {
               setUseFallback(true);
@@ -63,11 +62,11 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
           }}
           onError={() => setUseFallback(true)}
           style={{
-            width: 46,
-            height: 46,
+            width: '55%',
+            height: '55%',
             objectFit: 'contain',
             imageRendering: 'auto',
-            filter: 'drop-shadow(0 2px 6px rgba(0,200,83,0.25))',
+            filter: 'drop-shadow(0 2px 4px rgba(0,200,83,0.2))',
           }}
         />
       )}
@@ -75,19 +74,17 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
   );
 };
 
-type ReelStripProps = {
-  columnIndex: number;
+/** A single reel column strip — animates vertically via GSAP */
+const ReelStrip: React.FC<{
   stripRef: React.RefObject<HTMLDivElement | null>;
-};
-
-const ReelStrip: React.FC<ReelStripProps> = ({ columnIndex: _ci, stripRef }) => {
+}> = ({ stripRef }) => {
   return (
     <div
       style={{
-        flex: 1,
-        height: '100%',
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
         overflow: 'hidden',
-        position: 'relative',
       }}
     >
       <div
@@ -121,6 +118,11 @@ export type ReelWindowHandle = {
   resetReels: () => void;
 };
 
+// Column positions within viewport (percentage centers)
+// col1=16.6%, col2=50%, col3=83.4% — each column ~33.3% wide
+const COL_WIDTH_PCT = 30; // leave gaps between columns
+const COL_CENTERS = [16.6, 50, 83.4];
+
 export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
   ({ sceneState }, ref) => {
     const strip0 = useRef<HTMLDivElement>(null);
@@ -137,7 +139,6 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           gsap.set(s.current, { y: targetY });
         }
       });
-      // Only run on mount
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -167,7 +168,6 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               onComplete: resolve,
             });
 
-            // Fast spin phase
             tl.to(el, {
               y: currentY - spinDistance,
               duration: spinDuration * 0.6,
@@ -181,7 +181,6 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               },
             });
 
-            // Slowdown to exact target
             tl.to(el, {
               y: targetY,
               duration: spinDuration * 0.4,
@@ -235,60 +234,25 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           zIndex: zLayers.reels,
           width: '100%',
           height: '100%',
-          display: 'flex',
-          gap: 8,
           overflow: 'hidden',
-          borderRadius: 'inherit',
         }}
       >
+        {/* 3 reel columns — positioned at exact grid centers */}
         {strips.map((stripRef, i) => (
-          <React.Fragment key={i}>
-            <ReelStrip columnIndex={i} stripRef={stripRef} />
-            {/* Column separator */}
-            {i < 2 && (
-              <div
-                style={{
-                  width: 3,
-                  alignSelf: 'stretch',
-                  background: 'rgba(255,255,255,0.08)',
-                  flexShrink: 0,
-                }}
-              />
-            )}
-          </React.Fragment>
-        ))}
-
-        {/* Center row highlight — CSS fallback + PNG overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            height: SYMBOL_HEIGHT,
-            border: `1px solid ${visualTokens.colors.emeraldGlow}30`,
-            borderRadius: 6,
-            pointerEvents: 'none',
-            boxShadow: `inset 0 0 20px ${visualTokens.colors.emeraldGlow}10`,
-            overflow: 'hidden',
-            zIndex: 5,
-          }}
-        >
-          <img
-            src="/assets/fx/slot_row_highlight_overlay.png"
-            alt=""
-            draggable={false}
+          <div
+            key={i}
             style={{
               position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'fill',
-              opacity: 0.85,
+              left: `${COL_CENTERS[i] - COL_WIDTH_PCT / 2}%`,
+              width: `${COL_WIDTH_PCT}%`,
+              top: 0,
+              bottom: 0,
+              overflow: 'hidden',
             }}
-          />
-        </div>
+          >
+            <ReelStrip stripRef={stripRef} />
+          </div>
+        ))}
       </div>
     );
   },
