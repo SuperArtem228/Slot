@@ -16,7 +16,6 @@ const SYMBOLS = [
 ];
 
 const SYMBOL_HEIGHT = 72;
-const VISIBLE_COUNT = 3; // top, center, bottom
 const TOTAL_SYMBOLS = SYMBOLS.length;
 const STRIP_HEIGHT = TOTAL_SYMBOLS * SYMBOL_HEIGHT;
 
