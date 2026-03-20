@@ -4,15 +4,15 @@ import type { ReelWindowProps } from './ReelWindow.types';
 import { zLayers } from '../../theme/zLayers';
 import { visualTokens } from '../../theme/visualTokens';
 
-// Symbol data — PNG assets, no emojis, no text labels
+// Symbol data — PNG assets with emoji fallbacks
 const SYMBOLS = [
-  { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png' },
-  { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png' },
-  { id: 'chest',   asset: '/assets/symbols/symbol_treasure_chest_emerald.png' },
-  { id: '500FS',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png' },
-  { id: 'cup',     asset: '/assets/symbols/symbol_trophy_silver_blue.png' },
-  { id: 'pig',     asset: '/assets/symbols/symbol_vip_badge_emerald.png' },
-  { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png' },
+  { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png',          emoji: '\u{1F451}' },
+  { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png',      emoji: '\u{2B50}' },
+  { id: 'chest',   asset: '/assets/symbols/symbol_treasure_chest_emerald.png', emoji: '\u{1F4E6}' },
+  { id: '500FS',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png',      emoji: '\u{1F3B0}' },
+  { id: 'cup',     asset: '/assets/symbols/symbol_trophy_silver_blue.png',     emoji: '\u{1F3C6}' },
+  { id: 'pig',     asset: '/assets/symbols/symbol_vip_badge_emerald.png',      emoji: '\u{1F416}' },
+  { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}' },
 ];
 
 const SYMBOL_HEIGHT = 72;
@@ -34,6 +34,47 @@ function getOutcomeKey(state: string): string {
   if (state === 'final_lock' || state === 'jackpot_burst' || state === 'reward_morph') return 'win';
   return 'idle';
 }
+
+/** Single symbol cell — shows PNG image, falls back to emoji if image is tiny/missing */
+const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
+  const [useFallback, setUseFallback] = React.useState(false);
+
+  return (
+    <div
+      style={{
+        height: SYMBOL_HEIGHT,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {useFallback ? (
+        <span style={{ fontSize: 32, lineHeight: 1 }}>{sym.emoji}</span>
+      ) : (
+        <img
+          src={sym.asset}
+          alt={sym.id}
+          draggable={false}
+          onLoad={(e) => {
+            // If the loaded image is tiny (placeholder), use emoji fallback
+            const img = e.currentTarget;
+            if (img.naturalWidth <= 2 && img.naturalHeight <= 2) {
+              setUseFallback(true);
+            }
+          }}
+          onError={() => setUseFallback(true)}
+          style={{
+            width: 52,
+            height: 52,
+            objectFit: 'contain',
+            imageRendering: 'auto',
+            filter: 'drop-shadow(0 2px 6px rgba(0,200,83,0.25))',
+          }}
+        />
+      )}
+    </div>
+  );
+};
 
 type ReelStripProps = {
   columnIndex: number;
@@ -63,28 +104,7 @@ const ReelStrip: React.FC<ReelStripProps> = ({ columnIndex: _ci, stripRef }) => 
         {/* Render strip 3x for seamless wrap */}
         {[0, 1, 2].map((rep) =>
           SYMBOLS.map((sym, idx) => (
-            <div
-              key={`${rep}-${idx}`}
-              style={{
-                height: SYMBOL_HEIGHT,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <img
-                src={sym.asset}
-                alt={sym.id}
-                draggable={false}
-                style={{
-                  width: 52,
-                  height: 52,
-                  objectFit: 'contain',
-                  imageRendering: 'auto',
-                  filter: 'drop-shadow(0 2px 6px rgba(0,200,83,0.25))',
-                }}
-              />
-            </div>
+            <SymbolCell key={`${rep}-${idx}`} sym={sym} />
           )),
         )}
       </div>
@@ -227,19 +247,20 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           <ReelStrip key={i} columnIndex={i} stripRef={stripRef} />
         ))}
 
-        {/* Row highlight overlay — replaces old center line indicator */}
+        {/* Center row highlight — CSS fallback + PNG overlay */}
         <div
           style={{
             position: 'absolute',
-            left: 0,
-            right: 0,
+            left: '5%',
+            right: '5%',
             top: '50%',
             transform: 'translateY(-50%)',
             height: SYMBOL_HEIGHT,
+            border: `1px solid ${visualTokens.colors.emeraldGlow}30`,
+            borderRadius: 8,
             pointerEvents: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            boxShadow: `inset 0 0 20px ${visualTokens.colors.emeraldGlow}10`,
+            overflow: 'hidden',
           }}
         >
           <img
@@ -247,11 +268,12 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
             alt=""
             draggable={false}
             style={{
+              position: 'absolute',
+              inset: 0,
               width: '100%',
               height: '100%',
               objectFit: 'fill',
               opacity: 0.85,
-              filter: `drop-shadow(0 0 12px ${visualTokens.colors.emeraldGlow}40)`,
             }}
           />
         </div>

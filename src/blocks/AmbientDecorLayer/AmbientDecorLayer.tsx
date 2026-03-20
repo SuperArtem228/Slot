@@ -3,12 +3,12 @@ import type { AmbientDecorLayerProps, AmbientProp } from './AmbientDecorLayer.ty
 import { zLayers } from '../../theme/zLayers';
 
 const PROPS: AmbientProp[] = [
-  { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png',          x: 8,  y: 18, size: 36, depth: 'far',  rotation: -12 },
-  { id: 'chest',   asset: '/assets/symbols/symbol_treasure_chest_emerald.png', x: 85, y: 25, size: 32, depth: 'far',  rotation: 8 },
-  { id: 'cup',     asset: '/assets/symbols/symbol_trophy_silver_blue.png',     x: 12, y: 72, size: 30, depth: 'mid',  rotation: -5 },
-  { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        x: 88, y: 68, size: 34, depth: 'mid',  rotation: 15 },
-  { id: 'pig',     asset: '/assets/symbols/symbol_vip_badge_emerald.png',      x: 5,  y: 45, size: 28, depth: 'near', rotation: -8 },
-  { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png',      x: 92, y: 42, size: 26, depth: 'near', rotation: 10 },
+  { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png',          emoji: '\u{1F451}', x: 8,  y: 18, size: 36, depth: 'far',  rotation: -12 },
+  { id: 'chest',   asset: '/assets/symbols/symbol_treasure_chest_emerald.png', emoji: '\u{1F4E6}', x: 85, y: 25, size: 32, depth: 'far',  rotation: 8 },
+  { id: 'cup',     asset: '/assets/symbols/symbol_trophy_silver_blue.png',     emoji: '\u{1F3C6}', x: 12, y: 72, size: 30, depth: 'mid',  rotation: -5 },
+  { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}', x: 88, y: 68, size: 34, depth: 'mid',  rotation: 15 },
+  { id: 'pig',     asset: '/assets/symbols/symbol_vip_badge_emerald.png',      emoji: '\u{1F416}', x: 5,  y: 45, size: 28, depth: 'near', rotation: -8 },
+  { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png',      emoji: '\u{2B50}',  x: 92, y: 42, size: 26, depth: 'near', rotation: 10 },
 ];
 
 const depthOpacity: Record<string, number> = {
@@ -21,6 +21,31 @@ const depthBlur: Record<string, number> = {
   far: 3,
   mid: 1.5,
   near: 0,
+};
+
+/** Renders PNG with emoji fallback if image is placeholder/missing */
+const PropSymbol: React.FC<{ prop: AmbientProp }> = ({ prop }) => {
+  const [useFallback, setUseFallback] = React.useState(false);
+
+  if (useFallback) {
+    return <span style={{ fontSize: prop.size * 0.7 }}>{prop.emoji}</span>;
+  }
+
+  return (
+    <img
+      src={prop.asset}
+      alt=""
+      draggable={false}
+      onLoad={(e) => {
+        const img = e.currentTarget;
+        if (img.naturalWidth <= 2 && img.naturalHeight <= 2) {
+          setUseFallback(true);
+        }
+      }}
+      onError={() => setUseFallback(true)}
+      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+    />
+  );
 };
 
 export const AmbientDecorLayer: React.FC<AmbientDecorLayerProps> = ({ sceneState }) => {
@@ -61,12 +86,7 @@ export const AmbientDecorLayer: React.FC<AmbientDecorLayerProps> = ({ sceneState
               transition: 'opacity 0.5s ease',
             }}
           >
-            <img
-              src={prop.asset}
-              alt=""
-              draggable={false}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+            <PropSymbol prop={prop} />
           </div>
         ))}
       </div>
@@ -99,12 +119,7 @@ export const AmbientDecorLayer: React.FC<AmbientDecorLayerProps> = ({ sceneState
               transition: 'opacity 0.5s ease',
             }}
           >
-            <img
-              src={prop.asset}
-              alt=""
-              draggable={false}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
+            <PropSymbol prop={prop} />
           </div>
         ))}
       </div>

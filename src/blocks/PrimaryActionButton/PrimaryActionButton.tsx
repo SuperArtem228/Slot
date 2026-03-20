@@ -26,17 +26,23 @@ export const PrimaryActionButton: React.FC<PrimaryActionButtonProps> = ({
           position: 'relative',
           width: 280,
           height: 56,
+          borderRadius: visualTokens.radii.full,
           border: 'none',
-          background: 'transparent',
+          // CSS gradient as fallback — image overlays on top
+          background: enabled
+            ? `linear-gradient(135deg, ${visualTokens.colors.ctaBg}, ${visualTokens.colors.limeAccent})`
+            : 'rgba(255,255,255,0.1)',
           cursor: enabled ? 'pointer' : 'default',
           opacity: enabled ? 1 : 0.5,
           transition: 'all 0.3s ease',
+          boxShadow: enabled
+            ? `0 4px 20px ${visualTokens.colors.emeraldGlow}50`
+            : 'none',
           padding: 0,
           overflow: 'hidden',
-          borderRadius: visualTokens.radii.full,
         }}
       >
-        {/* CTA button image background */}
+        {/* CTA button image — overlays CSS gradient */}
         <img
           src="/assets/ui/cta_button_primary_green.png"
           alt=""
@@ -48,6 +54,7 @@ export const PrimaryActionButton: React.FC<PrimaryActionButtonProps> = ({
             height: '100%',
             objectFit: 'fill',
             borderRadius: 'inherit',
+            zIndex: 0,
           }}
         />
         {/* Label text on top */}
@@ -55,11 +62,10 @@ export const PrimaryActionButton: React.FC<PrimaryActionButtonProps> = ({
           style={{
             position: 'relative',
             zIndex: 1,
-            color: '#ffffff',
+            color: enabled ? '#0a0e14' : visualTokens.colors.textMuted,
             fontSize: visualTokens.fontSizes.md,
             fontWeight: 700,
             letterSpacing: 0.5,
-            textShadow: '0 1px 4px rgba(0,0,0,0.5)',
           }}
         >
           {label}
