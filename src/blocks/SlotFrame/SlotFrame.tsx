@@ -96,13 +96,17 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ sceneState, children }) =>
         }}
       />
 
-      {/* Reel content area */}
+      {/* Reel content area — inset from chrome frame edges */}
       <div
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
+          position: 'absolute',
+          top: '12%',
+          bottom: '14%',
+          left: '6%',
+          right: '6%',
           zIndex: 3,
+          overflow: 'hidden',
+          borderRadius: visualTokens.radii.md,
         }}
       >
         {children}

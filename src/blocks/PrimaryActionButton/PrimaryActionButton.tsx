@@ -27,45 +27,53 @@ export const PrimaryActionButton: React.FC<PrimaryActionButtonProps> = ({
           width: 280,
           height: 56,
           borderRadius: visualTokens.radii.full,
-          border: 'none',
-          // CSS gradient as fallback — image overlays on top
+          border: enabled
+            ? '1.5px solid rgba(255,255,255,0.25)'
+            : '1px solid rgba(255,255,255,0.06)',
           background: enabled
-            ? `linear-gradient(135deg, ${visualTokens.colors.ctaBg}, ${visualTokens.colors.limeAccent})`
-            : 'rgba(255,255,255,0.1)',
+            ? 'linear-gradient(180deg, #1b9e52 0%, #0d7a3a 50%, #0a5e2d 100%)'
+            : 'rgba(255,255,255,0.08)',
           cursor: enabled ? 'pointer' : 'default',
           opacity: enabled ? 1 : 0.5,
           transition: 'all 0.3s ease',
           boxShadow: enabled
-            ? `0 4px 20px ${visualTokens.colors.emeraldGlow}50`
+            ? [
+                '0 1px 0 rgba(255,255,255,0.15) inset',           // top inner highlight
+                '0 -1px 2px rgba(0,0,0,0.25) inset',              // bottom inner shadow
+                '0 4px 14px rgba(0,200,83,0.35)',                  // outer glow
+                '0 2px 4px rgba(0,0,0,0.4)',                       // drop shadow
+              ].join(', ')
             : 'none',
           padding: 0,
           overflow: 'hidden',
         }}
       >
-        {/* CTA button image — overlays CSS gradient */}
-        <img
-          src="/assets/ui/cta_button_primary_green.png"
-          alt=""
-          draggable={false}
+        {/* Soft gloss highlight — top half */}
+        <div
           style={{
             position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'fill',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '50%',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.03) 100%)',
             borderRadius: 'inherit',
-            zIndex: 0,
+            pointerEvents: 'none',
           }}
         />
-        {/* Label text on top */}
+        {/* Label text */}
         <span
           style={{
             position: 'relative',
             zIndex: 1,
-            color: enabled ? '#0a0e14' : visualTokens.colors.textMuted,
+            color: enabled ? '#ffffff' : visualTokens.colors.textMuted,
             fontSize: visualTokens.fontSizes.md,
             fontWeight: 700,
-            letterSpacing: 0.5,
+            letterSpacing: 1.2,
+            textShadow: enabled
+              ? '0 1px 2px rgba(0,0,0,0.4), 0 0 8px rgba(0,200,83,0.3)'
+              : 'none',
+            textTransform: 'uppercase',
           }}
         >
           {label}

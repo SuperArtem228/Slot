@@ -86,7 +86,7 @@ const ReelStrip: React.FC<ReelStripProps> = ({ columnIndex: _ci, stripRef }) => 
     <div
       style={{
         flex: 1,
-        height: VISIBLE_COUNT * SYMBOL_HEIGHT,
+        height: '100%',
         overflow: 'hidden',
         position: 'relative',
       }}
@@ -237,30 +237,43 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           width: '100%',
           height: '100%',
           display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 2,
-          padding: '0 8px',
+          gap: 3,
+          overflow: 'hidden',
+          borderRadius: 'inherit',
         }}
       >
         {strips.map((stripRef, i) => (
-          <ReelStrip key={i} columnIndex={i} stripRef={stripRef} />
+          <React.Fragment key={i}>
+            <ReelStrip columnIndex={i} stripRef={stripRef} />
+            {/* Column separator */}
+            {i < 2 && (
+              <div
+                style={{
+                  width: 1,
+                  alignSelf: 'stretch',
+                  background: 'rgba(255,255,255,0.06)',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+          </React.Fragment>
         ))}
 
         {/* Center row highlight — CSS fallback + PNG overlay */}
         <div
           style={{
             position: 'absolute',
-            left: '5%',
-            right: '5%',
+            left: 0,
+            right: 0,
             top: '50%',
             transform: 'translateY(-50%)',
             height: SYMBOL_HEIGHT,
             border: `1px solid ${visualTokens.colors.emeraldGlow}30`,
-            borderRadius: 8,
+            borderRadius: 6,
             pointerEvents: 'none',
             boxShadow: `inset 0 0 20px ${visualTokens.colors.emeraldGlow}10`,
             overflow: 'hidden',
+            zIndex: 5,
           }}
         >
           <img
