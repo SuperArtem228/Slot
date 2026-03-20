@@ -2,7 +2,7 @@ import type { RescueSceneState } from '../../scene/rescueSceneTypes';
 
 export type AmbientProp = {
   id: string;
-  emoji: string;
+  asset: string;    // path to PNG
   x: number;       // % from left
   y: number;       // % from top
   size: number;    // px

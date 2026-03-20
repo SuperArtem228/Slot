@@ -4,15 +4,15 @@ import type { ReelWindowProps } from './ReelWindow.types';
 import { zLayers } from '../../theme/zLayers';
 import { visualTokens } from '../../theme/visualTokens';
 
-// Symbol data
+// Symbol data — PNG assets, no emojis, no text labels
 const SYMBOLS = [
-  { id: 'crown', emoji: '\u{1F451}', label: 'crown' },
-  { id: 'bonus', emoji: '\u{2B50}', label: 'bonus' },
-  { id: 'chest', emoji: '\u{1F4E6}', label: 'chest' },
-  { id: '500FS', emoji: '\u{1F3B0}', label: '500FS' },
-  { id: 'cup', emoji: '\u{1F3C6}', label: 'cup' },
-  { id: 'pig', emoji: '\u{1F416}', label: 'pig' },
-  { id: 'tickets', emoji: '\u{1F39F}', label: 'tickets' },
+  { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png' },
+  { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png' },
+  { id: 'chest',   asset: '/assets/symbols/symbol_treasure_chest_emerald.png' },
+  { id: '500FS',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png' },
+  { id: 'cup',     asset: '/assets/symbols/symbol_trophy_silver_blue.png' },
+  { id: 'pig',     asset: '/assets/symbols/symbol_vip_badge_emerald.png' },
+  { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png' },
 ];
 
 const SYMBOL_HEIGHT = 72;
@@ -68,21 +68,22 @@ const ReelStrip: React.FC<ReelStripProps> = ({ columnIndex: _ci, stripRef }) => 
               style={{
                 height: SYMBOL_HEIGHT,
                 display: 'flex',
-                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <span style={{ fontSize: 32, lineHeight: 1 }}>{sym.emoji}</span>
-              <span
+              <img
+                src={sym.asset}
+                alt={sym.id}
+                draggable={false}
                 style={{
-                  fontSize: 10,
-                  color: visualTokens.colors.textMuted,
-                  marginTop: 2,
+                  width: 52,
+                  height: 52,
+                  objectFit: 'contain',
+                  imageRendering: 'auto',
+                  filter: 'drop-shadow(0 2px 6px rgba(0,200,83,0.25))',
                 }}
-              >
-                {sym.label}
-              </span>
+              />
             </div>
           )),
         )}
@@ -134,14 +135,10 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
             if (!el) { resolve(); return; }
 
             const targetIdx = targetIndices[colIdx] ?? 0;
-            // Spin = go through full strips + land on target
-            // Target position: we want the target symbol centered
-            // center offset = 1 symbol above center visible
-            const centerOffset = SYMBOL_HEIGHT; // one symbol above
+            const centerOffset = SYMBOL_HEIGHT;
             const targetY = -(targetIdx * SYMBOL_HEIGHT + STRIP_HEIGHT) - centerOffset;
 
-            // First go fast (many full rotations), then slow to target
-            const fullRotations = 3 + colIdx; // stagger feeling
+            const fullRotations = 3 + colIdx;
             const spinDistance = fullRotations * STRIP_HEIGHT;
 
             const currentY = gsap.getProperty(el, 'y') as number;
@@ -159,7 +156,6 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               modifiers: {
                 y: (y: string) => {
                   const val = parseFloat(y);
-                  // Wrap around: keep within 3 strip lengths
                   const wrapped = ((val % (STRIP_HEIGHT * 3)) + STRIP_HEIGHT * 3) % (STRIP_HEIGHT * 3);
                   return -wrapped + 'px';
                 },
@@ -231,21 +227,34 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           <ReelStrip key={i} columnIndex={i} stripRef={stripRef} />
         ))}
 
-        {/* Center line indicator */}
+        {/* Row highlight overlay — replaces old center line indicator */}
         <div
           style={{
             position: 'absolute',
-            left: '5%',
-            right: '5%',
+            left: 0,
+            right: 0,
             top: '50%',
             transform: 'translateY(-50%)',
             height: SYMBOL_HEIGHT,
-            border: `1px solid ${visualTokens.colors.emeraldGlow}30`,
-            borderRadius: 8,
             pointerEvents: 'none',
-            boxShadow: `inset 0 0 20px ${visualTokens.colors.emeraldGlow}10`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
+        >
+          <img
+            src="/assets/fx/slot_row_highlight_overlay.png"
+            alt=""
+            draggable={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'fill',
+              opacity: 0.85,
+              filter: `drop-shadow(0 0 12px ${visualTokens.colors.emeraldGlow}40)`,
+            }}
+          />
+        </div>
       </div>
     );
   },
