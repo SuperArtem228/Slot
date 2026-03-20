@@ -14,8 +14,8 @@ const SYMBOLS = [
   { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}' },
 ];
 
-// Each cell in the 3x3 grid — symbol occupies ~55% of cell
-const SYMBOL_HEIGHT = 56;
+// Larger symbol cells to fill the reel area densely
+const SYMBOL_HEIGHT = 80;
 const TOTAL_SYMBOLS = SYMBOLS.length;
 const STRIP_HEIGHT = TOTAL_SYMBOLS * SYMBOL_HEIGHT;
 
@@ -45,10 +45,11 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        flexShrink: 0,
       }}
     >
       {useFallback ? (
-        <span style={{ fontSize: 28, lineHeight: 1 }}>{sym.emoji}</span>
+        <span style={{ fontSize: 36, lineHeight: 1 }}>{sym.emoji}</span>
       ) : (
         <img
           src={sym.asset}
@@ -62,50 +63,14 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
           }}
           onError={() => setUseFallback(true)}
           style={{
-            width: '55%',
-            height: '55%',
+            width: 58,
+            height: 58,
             objectFit: 'contain',
             imageRendering: 'auto',
             filter: 'drop-shadow(0 2px 4px rgba(0,200,83,0.2))',
           }}
         />
       )}
-    </div>
-  );
-};
-
-/** A single reel column strip — animates vertically via GSAP */
-const ReelStrip: React.FC<{
-  stripRef: React.RefObject<HTMLDivElement | null>;
-}> = ({ stripRef }) => {
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        ref={stripRef}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          willChange: 'transform',
-        }}
-      >
-        {/* Render strip 3x for seamless wrap */}
-        {[0, 1, 2].map((rep) =>
-          SYMBOLS.map((sym, idx) => (
-            <SymbolCell key={`${rep}-${idx}`} sym={sym} />
-          )),
-        )}
-      </div>
     </div>
   );
 };
@@ -119,11 +84,6 @@ export type ReelWindowHandle = {
   ) => Promise<void>;
   resetReels: () => void;
 };
-
-// Column positions within viewport (percentage centers)
-// col1=16.6%, col2=50%, col3=83.4% — each column ~33.3% wide
-const COL_WIDTH_PCT = 30; // leave gaps between columns
-const COL_CENTERS = [16.6, 50, 83.4];
 
 export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
   ({ sceneState }, ref) => {
@@ -170,6 +130,7 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               onComplete: resolve,
             });
 
+            // Fast spin phase with wrapping
             tl.to(el, {
               y: currentY - spinDistance,
               duration: spinDuration * 0.6,
@@ -183,6 +144,7 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               },
             });
 
+            // Decelerate to target
             tl.to(el, {
               y: targetY,
               duration: spinDuration * 0.4,
@@ -236,23 +198,39 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           zIndex: zLayers.reels,
           width: '100%',
           height: '100%',
+          display: 'flex',
+          gap: 4,
+          padding: 4,
           overflow: 'hidden',
         }}
       >
-        {/* 3 reel columns — positioned at exact grid centers */}
+        {/* 3 reel columns — flex children filling the viewport */}
         {strips.map((stripRef, i) => (
           <div
             key={i}
             style={{
-              position: 'absolute',
-              left: `${COL_CENTERS[i] - COL_WIDTH_PCT / 2}%`,
-              width: `${COL_WIDTH_PCT}%`,
-              top: 0,
-              bottom: 0,
+              flex: 1,
+              position: 'relative',
               overflow: 'hidden',
             }}
           >
-            <ReelStrip stripRef={stripRef} />
+            {/* Vertically scrolling symbol strip */}
+            <div
+              ref={stripRef}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                willChange: 'transform',
+              }}
+            >
+              {/* 3x repeated for seamless looping */}
+              {[0, 1, 2].map((rep) =>
+                SYMBOLS.map((sym, idx) => (
+                  <SymbolCell key={`${rep}-${idx}`} sym={sym} />
+                )),
+              )}
+            </div>
           </div>
         ))}
       </div>
