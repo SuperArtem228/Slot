@@ -15,9 +15,9 @@ const FRAME_HEIGHT = '46%';
 
 /** Inner reel viewport — relative to frame bounds (% of frame) */
 const VIEWPORT_LEFT   = '19%';
-const VIEWPORT_TOP    = '15%';
+const VIEWPORT_TOP    = '17%';
 const VIEWPORT_WIDTH  = '62%';
-const VIEWPORT_HEIGHT = '58%';
+const VIEWPORT_HEIGHT = '54%';
 
 /** States that use the active (glowing) frame variant */
 const ACTIVE_FRAME_STATES = new Set([
