@@ -15,7 +15,7 @@ const SYMBOLS = [
   { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}' },
 ];
 
-const SYMBOL_HEIGHT = 72;
+const SYMBOL_HEIGHT = 64;
 const TOTAL_SYMBOLS = SYMBOLS.length;
 const STRIP_HEIGHT = TOTAL_SYMBOLS * SYMBOL_HEIGHT;
 
@@ -63,8 +63,8 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
           }}
           onError={() => setUseFallback(true)}
           style={{
-            width: 52,
-            height: 52,
+            width: 46,
+            height: 46,
             objectFit: 'contain',
             imageRendering: 'auto',
             filter: 'drop-shadow(0 2px 6px rgba(0,200,83,0.25))',
@@ -236,7 +236,7 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           width: '100%',
           height: '100%',
           display: 'flex',
-          gap: 3,
+          gap: 8,
           overflow: 'hidden',
           borderRadius: 'inherit',
         }}
@@ -248,9 +248,9 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
             {i < 2 && (
               <div
                 style={{
-                  width: 1,
+                  width: 3,
                   alignSelf: 'stretch',
-                  background: 'rgba(255,255,255,0.06)',
+                  background: 'rgba(255,255,255,0.08)',
                   flexShrink: 0,
                 }}
               />

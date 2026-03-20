@@ -96,14 +96,14 @@ export const SlotFrame: React.FC<SlotFrameProps> = ({ sceneState, children }) =>
         }}
       />
 
-      {/* Reel content area — inset from chrome frame edges */}
+      {/* Reel content area — inset to match the 3 dark column windows in frame PNG */}
       <div
         style={{
           position: 'absolute',
-          top: '12%',
-          bottom: '14%',
-          left: '6%',
-          right: '6%',
+          top: '14%',
+          bottom: '18%',
+          left: '8%',
+          right: '8%',
           zIndex: 3,
           overflow: 'hidden',
           borderRadius: visualTokens.radii.md,
