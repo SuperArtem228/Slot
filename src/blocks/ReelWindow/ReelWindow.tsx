@@ -1,9 +1,30 @@
-import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import gsap from 'gsap';
 import type { ReelWindowProps } from './ReelWindow.types';
 import { zLayers } from '../../theme/zLayers';
 
-// Symbol data — PNG assets with emoji fallbacks
+/*──────────────────────────────────────────────────────────────
+  FROZEN REEL CONSTANTS
+──────────────────────────────────────────────────────────────*/
+
+/** Number of visible rows in the viewport — always 3 */
+const VISIBLE_ROWS = 3;
+
+/** Symbol icon fills this fraction of its cell */
+const SYMBOL_FILL = 0.72;
+
+/** Gap between columns in px */
+const COL_GAP = 2;
+
+/** Symbol data — PNG assets with emoji fallbacks */
 const SYMBOLS = [
   { id: 'crown',   asset: '/assets/symbols/symbol_crown_emerald.png',          emoji: '\u{1F451}' },
   { id: 'bonus',   asset: '/assets/symbols/symbol_bonus_orb_emerald.png',      emoji: '\u{2B50}' },
@@ -14,12 +35,9 @@ const SYMBOLS = [
   { id: 'tickets', asset: '/assets/symbols/symbol_gift_box_violet.png',        emoji: '\u{1F39F}' },
 ];
 
-// Larger symbol cells to fill the reel area densely
-const SYMBOL_HEIGHT = 80;
 const TOTAL_SYMBOLS = SYMBOLS.length;
-const STRIP_HEIGHT = TOTAL_SYMBOLS * SYMBOL_HEIGHT;
 
-// Near miss outcomes: center row index for each column
+/** Near-miss / win outcomes: index into SYMBOLS for center row of each column */
 const OUTCOMES: Record<string, number[]> = {
   idle: [0, 3, 5],
   near_miss_1: [0, 1, 2],
@@ -34,14 +52,21 @@ function getOutcomeKey(state: string): string {
   return 'idle';
 }
 
-/** Single symbol cell — PNG with emoji fallback */
-const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
+/*──────────────────────────────────────────────────────────────
+  SymbolCell — renders one symbol at the given cell height
+──────────────────────────────────────────────────────────────*/
+
+const SymbolCell: React.FC<{
+  sym: typeof SYMBOLS[0];
+  cellH: number;
+}> = ({ sym, cellH }) => {
   const [useFallback, setUseFallback] = React.useState(false);
+  const iconSize = Math.round(cellH * SYMBOL_FILL);
 
   return (
     <div
       style={{
-        height: SYMBOL_HEIGHT,
+        height: cellH,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -49,7 +74,9 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
       }}
     >
       {useFallback ? (
-        <span style={{ fontSize: 36, lineHeight: 1 }}>{sym.emoji}</span>
+        <span style={{ fontSize: Math.round(iconSize * 0.7), lineHeight: 1 }}>
+          {sym.emoji}
+        </span>
       ) : (
         <img
           src={sym.asset}
@@ -57,14 +84,12 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
           draggable={false}
           onLoad={(e) => {
             const img = e.currentTarget;
-            if (img.naturalWidth <= 2 && img.naturalHeight <= 2) {
-              setUseFallback(true);
-            }
+            if (img.naturalWidth <= 2 && img.naturalHeight <= 2) setUseFallback(true);
           }}
           onError={() => setUseFallback(true)}
           style={{
-            width: 58,
-            height: 58,
+            width: iconSize,
+            height: iconSize,
             objectFit: 'contain',
             imageRendering: 'auto',
             filter: 'drop-shadow(0 2px 4px rgba(0,200,83,0.2))',
@@ -74,6 +99,10 @@ const SymbolCell: React.FC<{ sym: typeof SYMBOLS[0] }> = ({ sym }) => {
     </div>
   );
 };
+
+/*──────────────────────────────────────────────────────────────
+  ReelWindow — 3 vertical reel tracks inside the viewport
+──────────────────────────────────────────────────────────────*/
 
 export type ReelWindowHandle = {
   spinReels: (
@@ -87,22 +116,54 @@ export type ReelWindowHandle = {
 
 export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
   ({ sceneState }, ref) => {
+    const containerRef = useRef<HTMLDivElement>(null);
     const strip0 = useRef<HTMLDivElement>(null);
     const strip1 = useRef<HTMLDivElement>(null);
     const strip2 = useRef<HTMLDivElement>(null);
     const strips = [strip0, strip1, strip2];
 
-    // Set initial positions
+    // Derived from actual container measurement — guarantees exactly 3 visible rows
+    const [cellH, setCellH] = useState(60); // sensible fallback
+    const cellHRef = useRef(cellH);
+    cellHRef.current = cellH;
+
+    // Derived constants
+    const stripH = TOTAL_SYMBOLS * cellH;
+    const stripHRef = useRef(stripH);
+    stripHRef.current = stripH;
+
+    // Measure container and compute cell height before first paint
+    useLayoutEffect(() => {
+      const measure = () => {
+        if (containerRef.current) {
+          const h = containerRef.current.clientHeight;
+          if (h > 0) {
+            const newCellH = Math.floor(h / VISIBLE_ROWS);
+            setCellH(newCellH);
+          }
+        }
+      };
+      measure();
+
+      const ro = new ResizeObserver(measure);
+      if (containerRef.current) ro.observe(containerRef.current);
+      return () => ro.disconnect();
+    }, []);
+
+    // Position strips on mount once cellH is computed
     useEffect(() => {
+      const ch = cellHRef.current;
+      const sh = TOTAL_SYMBOLS * ch;
       const outcome = OUTCOMES[getOutcomeKey(sceneState)] ?? OUTCOMES.idle;
       strips.forEach((s, i) => {
         if (s.current) {
-          const targetY = -(outcome[i] * SYMBOL_HEIGHT + STRIP_HEIGHT);
+          // Position so the target symbol is in the CENTER row (row index 1)
+          const targetY = -(outcome[i] * ch + sh) + ch;
           gsap.set(s.current, { y: targetY });
         }
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [cellH]);
 
     const spinReels = useCallback(
       async (
@@ -111,26 +172,30 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
         staggerDelay: number,
         ease: string,
       ): Promise<void> => {
+        const ch = cellHRef.current;
+        const sh = TOTAL_SYMBOLS * ch;
+
         const promises = strips.map((stripRef, colIdx) => {
           return new Promise<void>((resolve) => {
             const el = stripRef.current;
             if (!el) { resolve(); return; }
 
             const targetIdx = targetIndices[colIdx] ?? 0;
-            const centerOffset = SYMBOL_HEIGHT;
-            const targetY = -(targetIdx * SYMBOL_HEIGHT + STRIP_HEIGHT) - centerOffset;
+            // Target Y: symbol at targetIdx is in center row
+            const targetY = -(targetIdx * ch + sh) + ch;
 
             const fullRotations = 3 + colIdx;
-            const spinDistance = fullRotations * STRIP_HEIGHT;
+            const spinDistance = fullRotations * sh;
 
             const currentY = gsap.getProperty(el, 'y') as number;
+            const totalStripPx = sh * 3; // 3x repeated
 
             const tl = gsap.timeline({
               delay: colIdx * staggerDelay,
               onComplete: resolve,
             });
 
-            // Fast spin phase with wrapping
+            // Fast spin phase — wrap modulo total strip length
             tl.to(el, {
               y: currentY - spinDistance,
               duration: spinDuration * 0.6,
@@ -138,13 +203,13 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
               modifiers: {
                 y: (y: string) => {
                   const val = parseFloat(y);
-                  const wrapped = ((val % (STRIP_HEIGHT * 3)) + STRIP_HEIGHT * 3) % (STRIP_HEIGHT * 3);
+                  const wrapped = ((val % totalStripPx) + totalStripPx) % totalStripPx;
                   return -wrapped + 'px';
                 },
               },
             });
 
-            // Decelerate to target
+            // Decelerate to exact target
             tl.to(el, {
               y: targetY,
               duration: spinDuration * 0.4,
@@ -159,9 +224,11 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
     );
 
     const resetReels = useCallback(() => {
+      const ch = cellHRef.current;
+      const sh = TOTAL_SYMBOLS * ch;
       strips.forEach((s, i) => {
         if (s.current) {
-          const y = -(OUTCOMES.idle[i] * SYMBOL_HEIGHT + STRIP_HEIGHT);
+          const y = -(OUTCOMES.idle[i] * ch + sh) + ch;
           gsap.set(s.current, { y });
         }
       });
@@ -169,7 +236,7 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
 
     useImperativeHandle(ref, () => ({ spinReels, resetReels }), [spinReels, resetReels]);
 
-    // Auto-position on state changes for non-spinning states
+    // Auto-position on non-spinning state changes
     useEffect(() => {
       const key = getOutcomeKey(sceneState);
       if (
@@ -179,11 +246,12 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
         sceneState !== 'spin_3_charge' &&
         sceneState !== 'spin_3'
       ) {
+        const ch = cellHRef.current;
+        const sh = TOTAL_SYMBOLS * ch;
         const outcome = OUTCOMES[key];
         strips.forEach((s, i) => {
           if (s.current) {
-            const centerOffset = SYMBOL_HEIGHT;
-            const targetY = -(outcome[i] * SYMBOL_HEIGHT + STRIP_HEIGHT) - centerOffset;
+            const targetY = -(outcome[i] * ch + sh) + ch;
             gsap.to(s.current, { y: targetY, duration: 0.3, ease: 'power2.out' });
           }
         });
@@ -192,6 +260,7 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
 
     return (
       <div
+        ref={containerRef}
         data-layer="reel-window"
         style={{
           position: 'relative',
@@ -199,22 +268,20 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
           width: '100%',
           height: '100%',
           display: 'flex',
-          gap: 4,
-          padding: 4,
-          overflow: 'hidden',
+          gap: COL_GAP,
+          /* NO overflow:hidden here — clipping is done by the viewport div in SlotFrame */
         }}
       >
-        {/* 3 reel columns — flex children filling the viewport */}
+        {/* Layer 3: three reel tracks */}
         {strips.map((stripRef, i) => (
           <div
             key={i}
             style={{
               flex: 1,
               position: 'relative',
-              overflow: 'hidden',
+              /* NO overflow:hidden on columns — viewport clips everything */
             }}
           >
-            {/* Vertically scrolling symbol strip */}
             <div
               ref={stripRef}
               style={{
@@ -224,10 +291,10 @@ export const ReelWindow = forwardRef<ReelWindowHandle, ReelWindowProps>(
                 willChange: 'transform',
               }}
             >
-              {/* 3x repeated for seamless looping */}
+              {/* 3x symbol set for seamless looping */}
               {[0, 1, 2].map((rep) =>
                 SYMBOLS.map((sym, idx) => (
-                  <SymbolCell key={`${rep}-${idx}`} sym={sym} />
+                  <SymbolCell key={`${rep}-${idx}`} sym={sym} cellH={cellH} />
                 )),
               )}
             </div>
