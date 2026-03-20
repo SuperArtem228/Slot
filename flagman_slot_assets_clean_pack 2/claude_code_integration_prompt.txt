@@ -1,0 +1,108 @@
+You are integrating a new visual asset pack into the existing working mobile rescue-slot prototype.
+
+Use ONLY the uploaded PNG assets from this pack as the visual source of truth for the current version.
+Do not redesign the feature from scratch.
+Do not replace the mechanic.
+Do not create a new layout.
+Do not add random emoji-like symbols.
+Do not keep debug text labels under symbols.
+
+Goal:
+Take the current working version and make it visually premium, coherent, and clean using the provided assets.
+
+Context:
+- The current prototype already works mechanically.
+- It has a 3x3 slot grid, three attempts, a middle active row, and a bottom CTA.
+- The current implementation looks like a debug prototype: random icons, text labels under symbols, weak frame, weak CTA, ugly blur / flash effects.
+- Your job is to BEAUTIFULLY integrate the new asset pack into the existing current version with minimal logic disruption.
+
+Uploaded assets and intended use:
+- reference_rescue_slot_concept.png — style reference only
+- slot_frame_idle.png — default slot shell
+- slot_frame_active.png — active / charged shell
+- slot_row_highlight_overlay.png — active middle-row highlight
+- cta_button_primary_green.png — main CTA shell
+- symbol_crown_emerald.png — crown symbol
+- symbol_bonus_orb_emerald.png — bonus / reward orb symbol
+- symbol_treasure_chest_emerald.png — chest symbol
+- symbol_gift_box_violet.png — gift / tickets replacement symbol
+- symbol_trophy_silver_blue.png — trophy / cup replacement symbol
+- symbol_vip_badge_emerald.png — VIP / pig replacement symbol
+
+Required mapping for the current symbol keys:
+- crown -> symbol_crown_emerald.png
+- pig -> symbol_vip_badge_emerald.png
+- bonus -> symbol_bonus_orb_emerald.png
+- cup -> symbol_trophy_silver_blue.png
+- tickets -> symbol_gift_box_violet.png
+- chest -> symbol_treasure_chest_emerald.png
+
+For the current key 500FS:
+- Keep the existing key name in code.
+- For now map it to symbol_bonus_orb_emerald.png OR render a simple elegant temporary premium text badge if needed.
+- Do not block the integration waiting for a perfect dedicated 500FS icon.
+
+What to implement:
+1. Replace the current ugly slot box with the new frame assets.
+   - Use slot_frame_idle.png as the default shell.
+   - Use slot_frame_active.png for active, charged, near-miss, and hit states.
+   - Preserve the current 3x3 structure and logic.
+
+2. Make symbols render INSIDE proper slot cells visually aligned to the grid.
+   - Do not leave symbols floating.
+   - Remove all text labels under the symbols.
+   - Normalize sizing, spacing, alignment, and visual padding.
+
+3. Keep the middle row as the focus line.
+   - Use slot_row_highlight_overlay.png for the active row emphasis.
+   - Replace the current ugly giant green blur circle and cheap starburst hit effect.
+   - Use subtle glow, opacity, scale, and shine instead of noisy effects.
+
+4. Replace the current CTA with the provided button shell.
+   - Overlay the current text on top of cta_button_primary_green.png.
+   - Make it look premium and readable.
+   - Preserve the current click behavior.
+
+5. Improve visual composition without changing the flow.
+   - Keep the top title / subtitle / attempts area.
+   - Keep the current layout structure.
+   - Make spacing, depth, and hierarchy feel cleaner and more premium.
+
+6. Improve animation quality in the current version.
+   - Do NOT add chaotic VFX.
+   - Do NOT add full-screen blur pulses.
+   - Do NOT add cheap flash spam.
+   - Use restrained premium motion:
+     - soft row glow fade in / out
+     - gentle shell transition idle -> active
+     - subtle symbol emphasis on the active row
+     - small scale / shine pulse on near miss or hit
+   - The result should feel clean, cinematic, and product-grade.
+
+7. Keep implementation practical.
+   - This is an integration pass into the existing version, not a rewrite.
+   - Reuse current state and mechanics wherever possible.
+   - Only refactor what is necessary to integrate the asset pack cleanly.
+
+Visual rules:
+- dark luxury iGaming style
+- chrome / graphite / emerald glow
+- clean hierarchy
+- premium, not noisy
+- no debug feel
+- no emoji feel
+- no labels under symbols
+- no childish or random styling
+
+What to return:
+1. Briefly explain what you changed.
+2. Implement the integration.
+3. List all changed files.
+4. Mention any temporary compromises, especially around 500FS.
+5. Stop.
+
+Important:
+- Do not invent new assets.
+- Do not switch to a different style.
+- Use the uploaded files directly.
+- Integrate beautifully into the current version.

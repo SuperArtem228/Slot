@@ -1,0 +1,101 @@
+[
+  {
+    "file": "reference_rescue_slot_concept.png",
+    "source": "Gemini_Generated_Image_574ldj574ldj574l.png",
+    "size": [
+      2048,
+      1671
+    ],
+    "background_removed": false
+  },
+  {
+    "file": "slot_frame_idle.png",
+    "source": "Gemini_Generated_Image_l7lp9ol7lp9ol7lp.png",
+    "size": [
+      1192,
+      1004
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "slot_frame_active.png",
+    "source": "Gemini_Generated_Image_c4lj70c4lj70c4lj.png",
+    "size": [
+      1192,
+      1004
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "slot_row_highlight_overlay.png",
+    "source": "Gemini_Generated_Image_c19gqcc19gqcc19g.png",
+    "size": [
+      1745,
+      325
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "cta_button_primary_green.png",
+    "source": "Gemini_Generated_Image_d9qhl3d9qhl3d9qh.png",
+    "size": [
+      1796,
+      828
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_crown_emerald.png",
+    "source": "Gemini_Generated_Image_3v7guk3v7guk3v7g.png",
+    "size": [
+      1290,
+      952
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_bonus_orb_emerald.png",
+    "source": "Gemini_Generated_Image_u76ovuu76ovuu76o.png",
+    "size": [
+      1038,
+      1034
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_treasure_chest_emerald.png",
+    "source": "Gemini_Generated_Image_f5kzy7f5kzy7f5kz.png",
+    "size": [
+      1428,
+      964
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_gift_box_violet.png",
+    "source": "Gemini_Generated_Image_dagoiddagoiddago.png",
+    "size": [
+      1014,
+      976
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_trophy_silver_blue.png",
+    "source": "Gemini_Generated_Image_vkphg6vkphg6vkph.png",
+    "size": [
+      982,
+      984
+    ],
+    "background_removed": true
+  },
+  {
+    "file": "symbol_vip_badge_emerald.png",
+    "source": "Gemini_Generated_Image_sk7esesk7esesk7e.png",
+    "size": [
+      957,
+      984
+    ],
+    "background_removed": true
+  }
+]
